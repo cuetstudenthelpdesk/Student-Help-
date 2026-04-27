@@ -1,13 +1,11 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PG Admissions 2026-27 | Student Guide</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<!-- Google AdSense loader: replace with your publisher id and uncomment
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
--->
+<!-- Ad slots are injected by JavaScript below -->
 <style>
   :root {
     --navy: #0a1628;
@@ -240,6 +238,9 @@
     min-height: 72px;
     border-radius: 10px;
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   .menu-ad-placeholder {
     border: 1.5px dashed var(--gray-200);
@@ -1569,14 +1570,38 @@ const departments = [
 // NAVIGATION
 // ..................................................
 
-// AdSense configuration:
-// 1) Put your real values for `client` and `slot`
-// 2) Set `enabled: true`
-const ADSENSE_CONFIG = {
-  enabled: false,
-  client: 'ca-pub-XXXXXXXXXXXXXXXX',
-  slot: '1234567890',
+// Banner ad network configuration (provided placements)
+const AD_CONFIG = {
+  enabled: true,
+  desktopBanner: { key: 'e4705168d85acfc60374ec9a11472be7', width: 728, height: 90 }, // 728x90_1
+  mobileBanner: { key: '4f2e266ce776d67acd279d34878d517c', width: 320, height: 50 }, // 320x50_1
 };
+
+function injectNetworkBanner(targetEl, placement) {
+  if (!targetEl || !placement) return;
+
+  const adBox = document.createElement('div');
+  adBox.className = 'menu-ad';
+  adBox.style.maxWidth = `${placement.width}px`;
+  adBox.style.minHeight = `${placement.height}px`;
+  targetEl.appendChild(adBox);
+
+  const cfgScript = document.createElement('script');
+  cfgScript.text = `
+    atOptions = {
+      'key' : '${placement.key}',
+      'format' : 'iframe',
+      'height' : ${placement.height},
+      'width' : ${placement.width},
+      'params' : {}
+    };
+  `;
+  adBox.appendChild(cfgScript);
+
+  const invokeScript = document.createElement('script');
+  invokeScript.src = `https://www.highperformanceformat.com/${placement.key}/invoke.js`;
+  adBox.appendChild(invokeScript);
+}
 
 function injectTopBannerAds() {
   const sections = document.querySelectorAll('main section');
@@ -1587,18 +1612,14 @@ function injectTopBannerAds() {
     const createBanner = (positionLabel) => {
       const wrap = document.createElement('div');
       wrap.className = positionLabel === 'bottom' ? 'menu-ad-wrap menu-ad-wrap-bottom' : 'menu-ad-wrap';
-      if (ADSENSE_CONFIG.enabled) {
-        wrap.innerHTML = `
-          <ins class="adsbygoogle menu-ad"
-               style="display:block"
-               data-ad-client="${ADSENSE_CONFIG.client}"
-               data-ad-slot="${ADSENSE_CONFIG.slot}"
-               data-ad-format="horizontal"
-               data-full-width-responsive="true"></ins>
-        `;
-      } else {
+      if (!AD_CONFIG.enabled) {
         wrap.innerHTML = `<div class="menu-ad menu-ad-placeholder">Banner Ad Placeholder (${positionLabel}) - ${sectionName}</div>`;
+        return wrap;
       }
+
+      const useMobile = window.matchMedia('(max-width: 768px)').matches;
+      const selectedPlacement = useMobile ? AD_CONFIG.mobileBanner : AD_CONFIG.desktopBanner;
+      injectNetworkBanner(wrap, selectedPlacement);
       return wrap;
     };
 
@@ -1606,14 +1627,12 @@ function injectTopBannerAds() {
       const topAd = createBanner('top');
       topAd.setAttribute('data-pos', 'top');
       section.insertBefore(topAd, section.firstChild);
-      if (ADSENSE_CONFIG.enabled && window.adsbygoogle) (window.adsbygoogle = window.adsbygoogle || []).push({});
     }
 
     if (!section.querySelector('.menu-ad-wrap[data-pos="bottom"]')) {
       const bottomAd = createBanner('bottom');
       bottomAd.setAttribute('data-pos', 'bottom');
       section.appendChild(bottomAd);
-      if (ADSENSE_CONFIG.enabled && window.adsbygoogle) (window.adsbygoogle = window.adsbygoogle || []).push({});
     }
   });
 }
@@ -1830,6 +1849,9 @@ injectTopBannerAds();
 </script>
 </body>
 </html>
+
+
+
 
 
 
